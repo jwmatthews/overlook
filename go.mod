@@ -1,3 +1,3 @@
 module github.com/jwmatthews/overlook
 
-require github.com/aws/aws-sdk-go v1.17.4 // indirect
+require github.com/aws/aws-sdk-go v1.17.4
