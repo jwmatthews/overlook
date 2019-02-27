@@ -36,6 +36,7 @@ func aggregateAllInfo(c <-chan overlook.RegionInfo) (float64, []overlook.RegionI
 		runningTotal += rInfo.Cost
 	}
 	overlook.DisplayRegionInfo(regionInfo)
+	overlook.StoreBillingSnapshots(regionInfo)
 	return runningTotal, regionInfo
 }
 
@@ -53,6 +54,7 @@ func processRegion(sess client.ConfigProvider, region string) overlook.RegionInf
 	rInfo.Instances = instances
 	rInfo.Cost = overlook.CalculateCost(instances)
 	rInfo.TypeSummary = overlook.CreateInstanceTypeSummary(instances)
+	rInfo.BillingSnapshots = overlook.FormBillingSnapshots(instances)
 	fmt.Println("Completed processing region: ", region)
 	return rInfo
 }

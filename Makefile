@@ -1,4 +1,4 @@
-GO111MODULE=on
+export GO111MODULE=on
 BUILD_VERBOSE=1
 VERSION = $(shell git describe --dirty --tags --always)
 REPO = github.com/jwmatthews/overlook
@@ -39,7 +39,7 @@ test:
 	go test -timeout 30s $(REPO)/pkg/...
 
 lint: $(GOMETALINTER)
-	gometalinter --skip vendor --deadline 5m ./...
+	$(GOMETALINTER) --skip vendor --deadline 5m ./...
 
 clean:
 	$(Q)rm build/${BINARY_NAME}*

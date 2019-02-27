@@ -1,6 +1,7 @@
 package overlook
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
@@ -25,6 +26,42 @@ func DisplayRegionInfo(regionInfo []RegionInfo) {
 			fmt.Printf("\t\t TotalHours: %.2f\n", sum.TotalHours)
 			fmt.Printf("\t\t Cost of Current Running: %.2f\n", sum.Cost)
 		}
+	}
+}
+
+// StoreBillingSnapshots will write billing snapshot data to S3
+func StoreBillingSnapshots(regionInfo []RegionInfo) {
+	f, err := os.Create("billing_snapshot.json")
+	if err != nil {
+		panic(err)
+	}
+	defer CheckClose(f)
+
+	regionSnapshots := make(map[string]map[string]BillingSnapshot)
+	for _, r := range regionInfo {
+		regionInstanceMap := make(map[string]BillingSnapshot)
+		for _, bSnap := range r.BillingSnapshots {
+			regionInstanceMap[bSnap.ID] = bSnap
+		}
+		regionSnapshots[r.RegionName] = regionInstanceMap
+	}
+
+	now := time.Now()
+	hourEntry := make(BillingHourEntry)
+	hourEntry[now.Hour()] = regionSnapshots
+
+	var bsJSON []byte
+	bsJSON, err = json.Marshal(hourEntry)
+	if err != nil {
+		panic(err)
+	}
+	_, err = f.WriteString(string(bsJSON))
+	if err != nil {
+		panic(err)
+	}
+	err = f.Sync()
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -64,6 +101,31 @@ func CreateInstanceTypeSummary(instances []InstanceInfo) map[string]InstanceType
 	return summary
 }
 
+// FormBillingSnapshots is used to help us form data for estimating costs over time
+func FormBillingSnapshots(instances []InstanceInfo) []BillingSnapshot {
+	var billSnaps = make([]BillingSnapshot, 0)
+	for _, inst := range instances {
+		b := BillingSnapshot{}
+		cost, err := GetCostPerHour(inst.InstanceType)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		b.ID = *inst.Instance.InstanceId
+		b.CostPerHour = cost
+		b.CurrentCost = CalculateCostPer(inst)
+		b.InstanceType = inst.InstanceType
+		b.HoursUp = inst.HoursUp
+		b.Tags = inst.Tags
+		b.State = inst.State
+		b.AvailabilityZone = inst.AvailabilityZone
+		b.Region = inst.Region
+		b.Arn = inst.Arn
+		billSnaps = append(billSnaps, b)
+	}
+	return billSnaps
+}
+
 //
 // GetInstances a list of instances in the region ordered by launchTime
 //
@@ -88,22 +150,17 @@ func GetInstances(svc *ec2.EC2) ([]InstanceInfo, error) {
 			}
 			info.Instance = inst
 			info.HoursUp = hoursSince(*inst.LaunchTime)
-			info.Region = *inst.Placement.AvailabilityZone
+			info.AvailabilityZone = *inst.Placement.AvailabilityZone
+			info.Region = *svc.Config.Region
 			info.State = *inst.State.Name
 			info.Tags = tags
 			info.InstanceType = *inst.InstanceType
+			if inst.IamInstanceProfile != nil {
+				if inst.IamInstanceProfile.Arn != nil {
+					info.Arn = *inst.IamInstanceProfile.Arn
+				}
+			}
 			instances = append(instances, info)
-
-			//if inst.IamInstanceProfile != nil {
-			//	if inst.IamInstanceProfile.Arn != nil {
-			//		fmt.Println("\t\tIamInstanceProfile.Arn:", *inst.IamInstanceProfile.Arn)
-			//	} else {
-			//		fmt.Println("\t\tIamInstanceProfile.Arn missing")
-			//	}
-			//} else {
-			//	fmt.Println("\t\tIamInstanceProfile: missing")
-			//}
-
 		}
 	}
 	//
