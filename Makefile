@@ -22,9 +22,8 @@ all: format build
 run: build/${BINARY_NAME}
 	pushd . && cd build && ./${BINARY_NAME} && popd
 
-$(GOMETALINTER):
-	go get -u github.com/alecthomas/gometalinter
-	gometalinter --install &> /dev/null
+${GOPATH}/bin/golangci-lint:
+	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 
 format:
 	$(Q)go fmt $(PKGS)
@@ -38,8 +37,8 @@ dep-update:
 test:
 	go test -timeout 30s $(REPO)/pkg/...
 
-lint: $(GOMETALINTER)
-	$(GOMETALINTER) --skip vendor --deadline 5m ./...
+lint: ${GOPATH}/bin/golangci-lint
+	golangci-lint run
 
 clean:
 	$(Q)rm build/${BINARY_NAME}*
