@@ -1,7 +1,6 @@
 package overlook
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
@@ -26,42 +25,6 @@ func DisplayRegionInfo(regionInfo []RegionInfo) {
 			fmt.Printf("\t\t TotalHours: %.2f\n", sum.TotalHours)
 			fmt.Printf("\t\t Cost of Current Running: %.2f\n", sum.Cost)
 		}
-	}
-}
-
-// StoreBillingSnapshots will write billing snapshot data to S3
-func StoreBillingSnapshots(regionInfo []RegionInfo) {
-	f, err := os.Create("billing_snapshot.json")
-	if err != nil {
-		panic(err)
-	}
-	defer CheckClose(f)
-
-	regionSnapshots := make(map[string]map[string]BillingSnapshot)
-	for _, r := range regionInfo {
-		regionInstanceMap := make(map[string]BillingSnapshot)
-		for _, bSnap := range r.BillingSnapshots {
-			regionInstanceMap[bSnap.ID] = bSnap
-		}
-		regionSnapshots[r.RegionName] = regionInstanceMap
-	}
-
-	now := time.Now()
-	hourEntry := make(BillingHourEntry)
-	hourEntry[now.Hour()] = regionSnapshots
-
-	var bsJSON []byte
-	bsJSON, err = json.Marshal(hourEntry)
-	if err != nil {
-		panic(err)
-	}
-	_, err = f.WriteString(string(bsJSON))
-	if err != nil {
-		panic(err)
-	}
-	err = f.Sync()
-	if err != nil {
-		panic(err)
 	}
 }
 

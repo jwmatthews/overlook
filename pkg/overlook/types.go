@@ -34,14 +34,26 @@ type InstanceTypeSummary struct {
 	Cost              float64
 }
 
-// BillingHourEntry higher level wrapper for snapshot data
-type BillingHourEntry map[int]map[string]map[string]BillingSnapshot
+// The layout for the billing snapshot is
+// Each day is a new json file with structure of
+// {"$DATE":
+//  {"$HOUR":
+//   {"$REGION:
+//     { "$INSTANCE_ID_1":  {"$BillingSnapshot"}
+//     { "$INSTANCE_ID_1":  {"$BillingSnapshot"}
+//  }}}
 
-// BillingRegionEntry gather snapshots by region
-type BillingRegionEntry struct {
-	Region    string
-	Snapshots []BillingSnapshot
-}
+// BillingDailyEntry, for a given day has all of the billing info organized by hour
+type BillingDailyEntry map[string]BillingHourEntry
+
+// BillingHourEntry, for a given hour, has all of the billing info organized by region
+type BillingHourEntry map[int]BillingRegionEntry
+
+// BillingRegionEntry, for a given region has all of the billing info organized by instance-id
+type BillingRegionEntry map[string]BillingInstancesEntry
+
+// BillingInstancesEntry, for a given instance-id has the billing information
+type BillingInstancesEntry map[string]BillingSnapshot
 
 // BillingSnapshot is used to capture time series data of usage
 type BillingSnapshot struct {

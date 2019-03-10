@@ -14,7 +14,6 @@ else
 endif
 
 BIN_DIR := $(GOPATH)/bin
-GOMETALINTER := $(BIN_DIR)/gometalinter
 
 .PHONY: all test format dep clean lint build install release_x86_64 release
 all: format build
@@ -38,7 +37,7 @@ test:
 	go test -timeout 30s $(REPO)/pkg/...
 
 lint: ${GOPATH}/bin/golangci-lint
-	golangci-lint run
+	${GOPATH}/bin/golangci-lint run
 
 clean:
 	$(Q)rm build/${BINARY_NAME}*

@@ -36,7 +36,7 @@ func aggregateAllInfo(c <-chan overlook.RegionInfo) (float64, []overlook.RegionI
 		runningTotal += rInfo.Cost
 	}
 	overlook.DisplayRegionInfo(regionInfo)
-	overlook.StoreBillingSnapshots(regionInfo)
+	overlook.StoreBillingSnapshots(regionInfo, "billing")
 	return runningTotal, regionInfo
 }
 
