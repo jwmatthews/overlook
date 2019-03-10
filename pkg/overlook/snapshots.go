@@ -70,7 +70,7 @@ func StoreBillingSnapshots(regionInfo []RegionInfo, dirName string) {
 	// TODO: Add ability to change directory where snapshots are stored.
 	//
 	now := time.Now()
-	hour := now.Second()
+	hour := now.Hour()
 	ymd := now.Format("01-02-2006")
 	var dailyEntry BillingDailyEntry
 
