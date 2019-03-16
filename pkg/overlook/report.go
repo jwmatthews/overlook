@@ -1,6 +1,9 @@
 package overlook
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 // NewReportDaily returns a new ReportDaily
 func NewReportDaily() ReportDaily {
@@ -15,8 +18,12 @@ func NewReportByRegion() ReportByRegion {
 	return report
 }
 
-// CalculateReport returns a summary of usage and costs for as given BillingDailyEntry
-func CalculateReport(dailyEntry BillingDailyEntry) {
+func PrintReport(r ReportDaily) {
+	fmt.Println(r.FormatByCost())
+}
+
+// GetReport returns a summary of usage and costs for as given BillingDailyEntry
+func GetReport(dailyEntry BillingDailyEntry) ReportDaily {
 	//
 	// We will walk through a report of usage which is focused on days usage of ec2..
 	// The usage report is organized by hour, showing what instances we've seen in that hour
@@ -72,9 +79,11 @@ func CalculateReport(dailyEntry BillingDailyEntry) {
 				report.Cost = report.Cost + reportInstType.Cost
 			}
 		}
-		//fmt.Println(report)
-		fmt.Println(report.FormatByCost())
+		return report
 	}
+	// This should never happen
+	panic(errors.New("We should never reach here, problem parsing date in billing data"))
+	return ReportDaily{}
 }
 
 // PrintCalculateReport returns a summary of usage and costs for as given BillingDailyEntry

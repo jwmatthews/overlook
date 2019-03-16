@@ -113,7 +113,7 @@ func (r ReportDaily) FormatByCost() string {
 type ReportByRegion struct {
 	InstanceTypes map[string]ReportInstanceType
 	Cost          float64
-	Region string
+	Region        string
 }
 
 func (r ReportByRegion) String() string {
@@ -125,10 +125,10 @@ func (r ReportByRegion) String() string {
 }
 
 type ReportInstanceType struct {
-	InstanceType string
-	Hours        int
-	Cost         float64
-	UniqueInstances      map[string]bool
+	InstanceType    string
+	Hours           int
+	Cost            float64
+	UniqueInstances map[string]bool
 }
 
 func (r ReportInstanceType) String() string {

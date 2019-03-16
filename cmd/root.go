@@ -27,6 +27,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.AddCommand(WatchCommand)
 	rootCmd.AddCommand(ReportCommand)
+	rootCmd.AddCommand(EmailCommand)
 }
 
 func initConfig() {

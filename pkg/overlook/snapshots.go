@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
+	"path"
 	"path/filepath"
+	"sort"
 	"time"
 )
 
@@ -14,6 +17,31 @@ func GetBillingDataLocation() string {
 	billingDirName := filepath.Join(".", "billing")
 	s, _ := filepath.Abs(billingDirName)
 	return s
+}
+
+// GetBillingDataSortedFileNames returns a slice of billing data file names sorted by date
+func GetBillingDataSortedFileNames() []string {
+	var billingDataPath = GetBillingDataLocation()
+	if _, err := os.Stat(billingDataPath); os.IsNotExist(err) {
+		fmt.Println("Billing directory of", billingDataPath, " doesn't exist")
+		panic(err)
+	}
+	// Get all files
+	files, err := ioutil.ReadDir(billingDataPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fileNames := make([]string, 0)
+	for _, f := range files {
+		fileNames = append(fileNames, f.Name())
+	}
+	sort.Slice(fileNames, func(i, j int) bool { return fileNames[i] > fileNames[j] })
+
+	absFileNames := make([]string, 0)
+	for _, f := range fileNames {
+		absFileNames = append(absFileNames, path.Join(billingDataPath, f))
+	}
+	return absFileNames
 }
 
 // ReadSnapshotInfo returns a BillingDailyEntry for given filename
