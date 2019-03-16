@@ -43,6 +43,7 @@ func CalculateReport(dailyEntry BillingDailyEntry) {
 						reportInst = ReportInstanceType{}
 						reportInst.InstanceType = instType
 						reportInst.Hours = 0
+						reportInst.UniqueInstances = make(map[string]bool)
 					}
 					instanceCost, err := GetCostPerHour(reportInst.InstanceType)
 					if err != nil {
@@ -50,6 +51,7 @@ func CalculateReport(dailyEntry BillingDailyEntry) {
 					}
 					reportInst.Hours = reportInst.Hours + 1
 					reportInst.Cost = float64(reportInst.Hours) * instanceCost
+					reportInst.UniqueInstances[instanceEntry.ID] = true
 					reportByRegion.InstanceTypes[instType] = reportInst
 				}
 				report.Regions[region] = reportByRegion

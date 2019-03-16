@@ -103,7 +103,8 @@ func (r ReportDaily) FormatByCost() string {
 	for _, r := range regionInfo {
 		s = s + fmt.Sprintf("\n\t%s, Cost: %.2f", r.Region, r.Cost)
 		for instanceType, reportInstanceType := range r.InstanceTypes {
-			s = s + fmt.Sprintf("\n\t\t%s: Cost: %.2f, Hours:%d", instanceType, reportInstanceType.Cost, reportInstanceType.Hours)
+			s = s + fmt.Sprintf("\n\t\t%s: Cost: %.2f, Hours:%d, NumberUniqueInstances:%d",
+				instanceType, reportInstanceType.Cost, reportInstanceType.Hours, len(reportInstanceType.UniqueInstances))
 		}
 	}
 	return s
@@ -127,7 +128,7 @@ type ReportInstanceType struct {
 	InstanceType string
 	Hours        int
 	Cost         float64
-	Number       int
+	UniqueInstances      map[string]bool
 }
 
 func (r ReportInstanceType) String() string {
