@@ -1,16 +1,32 @@
 package cmd
 
 import (
-	"flag"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/jwmatthews/overlook/pkg/overlook"
+	"github.com/spf13/cobra"
 	"os"
 	"sync"
 )
+
+// WatchCommand cobra command to invoke Watch
+var WatchCommand = &cobra.Command{
+	Use:   "watch",
+	Short: "Watches ec2 usage",
+	Long:  `Watches ec2 usage, sampling at a given interval and recording usage info.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		Watch()
+	},
+}
+
+var region string
+
+func init() {
+	WatchCommand.Flags().StringVarP(&region, "region", "r", "", "Specify a single region, by default will assume all regions")
+}
 
 // GetRegions returns a slice of all region strings
 func GetRegions(sess client.ConfigProvider) []string {
@@ -28,6 +44,7 @@ func GetRegions(sess client.ConfigProvider) []string {
 }
 
 func aggregateAllInfo(c <-chan overlook.RegionInfo) (float64, []overlook.RegionInfo) {
+	var billingDir = overlook.GetBillingDataLocation()
 	var runningTotal float64
 	var regionInfo = make([]overlook.RegionInfo, 0)
 	for rInfo := range c {
@@ -35,7 +52,7 @@ func aggregateAllInfo(c <-chan overlook.RegionInfo) (float64, []overlook.RegionI
 		runningTotal += rInfo.Cost
 	}
 	overlook.DisplayRegionInfo(regionInfo)
-	overlook.StoreBillingSnapshots(regionInfo, "billing")
+	overlook.StoreBillingSnapshots(regionInfo, billingDir)
 	return runningTotal, regionInfo
 }
 
@@ -64,10 +81,6 @@ func processRegion(sess client.ConfigProvider, region string) overlook.RegionInf
 //			By type:  Number of instances with uptime of each, total hours up
 //	- Volumes: TODO
 func Watch() {
-	var region string
-	flag.StringVar(&region, "r", "", "Specify a single region, by default will assume all regions")
-	flag.Parse()
-
 	// Load session from shared config
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,

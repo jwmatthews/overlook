@@ -9,7 +9,15 @@ import (
 	"time"
 )
 
-func readSnapshotInfo(filename string) BillingDailyEntry {
+// GetBillingDataLocation returns where the billing directory will exist
+func GetBillingDataLocation() string {
+	billingDirName := filepath.Join(".", "billing")
+	s, _ := filepath.Abs(billingDirName)
+	return s
+}
+
+// ReadSnapshotInfo returns a BillingDailyEntry for given filename
+func ReadSnapshotInfo(filename string) BillingDailyEntry {
 	dailyEntry := make(BillingDailyEntry)
 
 	if Exists(filename) {
@@ -64,26 +72,25 @@ func writeSnapshotInfo(filename string, dailyEntry BillingDailyEntry) (err error
 	return err
 }
 
-// StoreBillingSnapshots will write billing snapshot data to S3
-func StoreBillingSnapshots(regionInfo []RegionInfo, dirName string) {
+// StoreBillingSnapshots will write billing snapshot data to billingDirPath
+func StoreBillingSnapshots(regionInfo []RegionInfo, billingDirPath string) {
 	//
-	// TODO: Add ability to change directory where snapshots are stored.
+	// TODO: Add ability to write to S3
 	//
 	now := time.Now()
 	hour := now.Hour()
 	ymd := now.Format("01-02-2006")
 	var dailyEntry BillingDailyEntry
 
-	billingDirName := filepath.Join(".", dirName)
-	if _, err := os.Stat(billingDirName); os.IsNotExist(err) {
-		err = os.MkdirAll(billingDirName, os.ModePerm)
+	if _, err := os.Stat(billingDirPath); os.IsNotExist(err) {
+		err = os.MkdirAll(billingDirPath, os.ModePerm)
 		if err != nil {
 			panic(err)
 		}
 	}
 
-	snapshotFilename := fmt.Sprintf("%s/%s.json", dirName, ymd)
-	dailyEntry = readSnapshotInfo(snapshotFilename)
+	snapshotFilename := fmt.Sprintf("%s/%s.json", billingDirPath, ymd)
+	dailyEntry = ReadSnapshotInfo(snapshotFilename)
 
 	var hourlyEntry BillingHourEntry
 	var regionEntry BillingRegionEntry

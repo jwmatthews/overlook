@@ -1,7 +1,9 @@
 package overlook
 
 import (
+	"fmt"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"sort"
 )
 
 // RegionInfo captures instance info across a region
@@ -67,4 +69,67 @@ type BillingSnapshot struct {
 	CostPerHour      float64
 	CurrentCost      float64
 	Arn              string
+}
+
+type ReportDaily struct {
+	Regions map[string]ReportByRegion
+	Cost    float64
+	Date    string
+}
+
+func (r ReportDaily) String() string {
+	s := fmt.Sprintf("%s, Cost:%.2f", r.Date, r.Cost)
+	for region, reportByRegion := range r.Regions {
+		s = s + fmt.Sprintf("\n\t%s, Cost: %.2f", region, reportByRegion.Cost)
+		for instanceType, reportInstanceType := range reportByRegion.InstanceTypes {
+			s = s + fmt.Sprintf("\n\t\t%s: Cost: %.2f, Hours:%d", instanceType, reportInstanceType.Cost, reportInstanceType.Hours)
+		}
+	}
+	return s
+}
+
+func (r ReportDaily) FormatByCost() string {
+	s := fmt.Sprintf("%s, Cost:%.2f", r.Date, r.Cost)
+	var regionInfo = make([]ReportByRegion, 0)
+	// Filter and remove regions with no activity
+	for _, reportByRegion := range r.Regions {
+		if reportByRegion.Cost > 0 {
+			regionInfo = append(regionInfo, reportByRegion)
+		}
+	}
+	// Sort by cost
+	sort.Slice(regionInfo, func(i, j int) bool { return regionInfo[i].Cost > regionInfo[j].Cost })
+
+	for _, r := range regionInfo {
+		s = s + fmt.Sprintf("\n\t%s, Cost: %.2f", r.Region, r.Cost)
+		for instanceType, reportInstanceType := range r.InstanceTypes {
+			s = s + fmt.Sprintf("\n\t\t%s: Cost: %.2f, Hours:%d", instanceType, reportInstanceType.Cost, reportInstanceType.Hours)
+		}
+	}
+	return s
+}
+
+type ReportByRegion struct {
+	InstanceTypes map[string]ReportInstanceType
+	Cost          float64
+	Region string
+}
+
+func (r ReportByRegion) String() string {
+	var s string
+	for region, reportByInstanceType := range r.InstanceTypes {
+		s = s + fmt.Sprintf("\n\t%s: %s", region, reportByInstanceType)
+	}
+	return s
+}
+
+type ReportInstanceType struct {
+	InstanceType string
+	Hours        int
+	Cost         float64
+	Number       int
+}
+
+func (r ReportInstanceType) String() string {
+	return fmt.Sprintf("%s: Cost:%.2f, Hours:%d", r.InstanceType, r.Cost, r.Hours)
 }

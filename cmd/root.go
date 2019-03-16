@@ -16,15 +16,6 @@ This sampling of usage is then used to create reports on usage and estimate of c
 	},
 }
 
-var cmdWatch = &cobra.Command{
-	Use:   "watch [# times] [string to echo]",
-	Short: "Watches ec2 usage",
-	Long:  `Watches ec2 usage, sampling at a given interval and recording usage info.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		Watch()
-	},
-}
-
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -34,7 +25,8 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.AddCommand(cmdWatch)
+	rootCmd.AddCommand(WatchCommand)
+	rootCmd.AddCommand(ReportCommand)
 }
 
 func initConfig() {

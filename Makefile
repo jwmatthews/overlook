@@ -18,8 +18,11 @@ BIN_DIR := $(GOPATH)/bin
 .PHONY: all test format dep clean lint build install release_x86_64 release
 all: format build
 
-run: build/${BINARY_NAME}
-	pushd . && cd build && ./${BINARY_NAME} && popd
+run_report: build/${BINARY_NAME}
+	pushd . && cd build && ./${BINARY_NAME} report && popd
+
+run_watch: build/${BINARY_NAME}
+	pushd . && cd build && ./${BINARY_NAME} watch && popd
 
 ${GOPATH}/bin/golangci-lint:
 	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
