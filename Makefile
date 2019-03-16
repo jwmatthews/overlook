@@ -59,7 +59,7 @@ build/${BINARY_NAME}-%-x86_64-apple-darwin: GOARGS = GOOS=darwin GOARCH=amd64
 
 build/${BINARY_NAME}: build
 
-build: lint
+build:
 	$(Q)$(GOARGS) go build -o build/${BINARY_NAME} $(BUILD_PATH)
 
 build/%.asc:
