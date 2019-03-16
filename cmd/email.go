@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -52,8 +53,10 @@ func SendEmail(reports []overlook.ReportDaily) {
 	for _, r := range reports {
 		body = body + r.FormatByCost() + "\n"
 	}
+	now := time.Now()
+	ymd := now.Format("01-02-2006")
 
-	subject := "Migration Eng AWS Usage"
+	subject := "Migration Eng AWS Usage for " + ymd
 
 	htmlBody := "<h1>AWS EC2 Usage Report for Migration Engineering</h1>" +
 		"<p>This report was produced by <a href='https://github.com/jwmatthews/overlook'>https://github.com/jwmatthews/overlook</a></p>" +
