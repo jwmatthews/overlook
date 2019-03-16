@@ -2,7 +2,7 @@ export GO111MODULE=on
 BUILD_VERBOSE=1
 VERSION = $(shell git describe --dirty --tags --always)
 REPO = github.com/jwmatthews/overlook
-BUILD_PATH = $(REPO)/cmd
+BUILD_PATH = $(REPO)
 PKGS = $(shell go list ./... | grep -v /vendor/)
 BINARY_NAME=overlook
 

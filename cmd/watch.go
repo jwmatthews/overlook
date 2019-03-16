@@ -1,16 +1,15 @@
-package main
+package cmd
 
 import (
 	"flag"
 	"fmt"
-	"os"
-	"sync"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/jwmatthews/overlook/pkg/overlook"
+	"os"
+	"sync"
 )
 
 // GetRegions returns a slice of all region strings
@@ -64,7 +63,7 @@ func processRegion(sess client.ConfigProvider, region string) overlook.RegionInf
 //	- Instances
 //			By type:  Number of instances with uptime of each, total hours up
 //	- Volumes: TODO
-func main() {
+func Watch() {
 	var region string
 	flag.StringVar(&region, "r", "", "Specify a single region, by default will assume all regions")
 	flag.Parse()
