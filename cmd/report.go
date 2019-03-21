@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/jwmatthews/overlook/pkg/overlook"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -18,12 +17,12 @@ var ReportCommand = &cobra.Command{
 }
 
 func Report() {
-	fmt.Println("Running report")
+	log.Infoln("Running report")
 	usageFileNames := overlook.GetBillingDataSortedFileNames()
-	fmt.Println(usageFileNames)
+	log.Infoln(usageFileNames)
 
 	for _, f := range usageFileNames {
-		fmt.Println("Processing: ", f)
+		log.Infoln("Processing: ", f)
 		dailyEntry := overlook.ReadSnapshotInfo(f)
 		r := overlook.GetReport(dailyEntry)
 		overlook.PrintReport(r)

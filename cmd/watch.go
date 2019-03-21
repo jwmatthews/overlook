@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/jwmatthews/overlook/pkg/overlook"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
 	"sync"
@@ -64,14 +65,18 @@ func processRegion(sess client.ConfigProvider, region string) overlook.RegionInf
 	svc := ec2.New(sess, aws.NewConfig().WithRegion(rInfo.RegionName))
 	instances, err := overlook.GetInstances(svc)
 	if err != nil {
-		fmt.Println("Error", err)
+		log.Fatalln("Error", err)
 		os.Exit(1)
 	}
 	rInfo.Instances = instances
-	rInfo.Cost = overlook.CalculateCost(instances)
+	rInfo.Cost, err = overlook.CalculateCost(instances)
+	if err != nil {
+		log.Errorln("Unable to calculate costs for all instances")
+		log.Errorln(err)
+	}
 	rInfo.TypeSummary = overlook.CreateInstanceTypeSummary(instances)
 	rInfo.BillingSnapshots = overlook.FormBillingSnapshots(instances)
-	fmt.Println("Completed processing region: ", region)
+	log.Infoln("Completed processing region: ", region)
 	return rInfo
 }
 
@@ -81,6 +86,7 @@ func processRegion(sess client.ConfigProvider, region string) overlook.RegionInf
 //			By type:  Number of instances with uptime of each, total hours up
 //	- Volumes: TODO
 func Watch() {
+	log.Infoln("Watch invoked")
 	// Load session from shared config
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
@@ -93,7 +99,7 @@ func Watch() {
 		regions = GetRegions(sess)
 	}
 
-	fmt.Println("Working with ", len(regions), "regions: ", regions)
+	log.Infoln("Working with ", len(regions), "regions: ", regions)
 
 	var runningTotal float64
 	var consumerGroup sync.WaitGroup
@@ -124,5 +130,5 @@ func Watch() {
 	consumerGroup.Wait()
 
 	formattedTotal := fmt.Sprintf("%.2f", runningTotal)
-	fmt.Println("RunningTotal: ", formattedTotal)
+	log.Infoln("RunningTotal: ", formattedTotal)
 }

@@ -1,6 +1,7 @@
 package overlook
 
 import (
+	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
 )
@@ -10,7 +11,7 @@ func CheckClose(v interface{}) {
 	if d, ok := v.(io.Closer); ok {
 		err := d.Close()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 }

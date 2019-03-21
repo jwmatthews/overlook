@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
+	log "github.com/sirupsen/logrus"
 )
 
 func hoursSince(fromTime time.Time) float64 {
@@ -24,30 +25,35 @@ func DisplayRegionInfo(regionInfo []RegionInfo) {
 			fmt.Println("\t\t Number of Instances:", sum.NumberOfInstances)
 			fmt.Printf("\t\t TotalHours: %.2f\n", sum.TotalHours)
 			fmt.Printf("\t\t Cost of Current Running: %.2f\n", sum.Cost)
+
+			log.Infof("%s: %s: Number of Instances: %d, Total Hours: %.2f, Cost of Current Running: %.2f", r.RegionName, sum.InstanceType, sum.NumberOfInstances, sum.TotalHours, sum.Cost)
 		}
 	}
 }
 
 // CalculateCost calculates cost of current instances
-func CalculateCost(instances []InstanceInfo) float64 {
+func CalculateCost(instances []InstanceInfo) (float64, error) {
 	runningTotal := 0.0
 	for _, inst := range instances {
-		rawEstimatedCost := CalculateCostPer(inst)
+		rawEstimatedCost, err := CalculateCostPer(inst)
+		if err != nil {
+			return 0, err
+		}
 		inst.Cost = rawEstimatedCost
 		runningTotal += rawEstimatedCost
 	}
-	return runningTotal
+	return runningTotal, nil
 }
 
 // CalculateCostPer cost of a single instance
-func CalculateCostPer(inst InstanceInfo) float64 {
+func CalculateCostPer(inst InstanceInfo) (float64, error) {
 	cost, err := GetCostPerHour(inst.InstanceType)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Errorln(err)
+		return 0, err
 	}
 	rawEstimatedCost := cost * inst.HoursUp
-	return rawEstimatedCost
+	return rawEstimatedCost, nil
 }
 
 // CreateInstanceTypeSummary creates summary info on instance types
@@ -58,7 +64,12 @@ func CreateInstanceTypeSummary(instances []InstanceInfo) map[string]InstanceType
 		instSumm.InstanceType = inst.InstanceType
 		instSumm.NumberOfInstances++
 		instSumm.TotalHours += inst.HoursUp
-		instSumm.Cost += CalculateCostPer(inst)
+		x, err := CalculateCostPer(inst)
+		if err != nil {
+			log.Errorln("Skipping Instance ID: " + *inst.Instance.InstanceId + ", of type: " + inst.InstanceType)
+			continue
+		}
+		instSumm.Cost += x
 		summary[inst.InstanceType] = instSumm
 	}
 	return summary
@@ -71,12 +82,19 @@ func FormBillingSnapshots(instances []InstanceInfo) []BillingSnapshot {
 		b := BillingSnapshot{}
 		cost, err := GetCostPerHour(inst.InstanceType)
 		if err != nil {
-			fmt.Println(err)
+			log.Infoln(err)
 			os.Exit(1)
 		}
 		b.ID = *inst.Instance.InstanceId
 		b.CostPerHour = cost
-		b.CurrentCost = CalculateCostPer(inst)
+
+		var x float64
+		x, err = CalculateCostPer(inst)
+		if err != nil {
+			log.Errorln("Skipping Instance ID: " + *inst.Instance.InstanceId + ", of type: " + inst.InstanceType)
+			continue
+		}
+		b.CurrentCost = x
 		b.InstanceType = inst.InstanceType
 		b.HoursUp = inst.HoursUp
 		b.Tags = inst.Tags
@@ -96,14 +114,14 @@ func GetInstances(svc *ec2.EC2) ([]InstanceInfo, error) {
 	instances := make([]InstanceInfo, 0)
 	resultInstances, err := svc.DescribeInstances(nil)
 	if err != nil {
-		fmt.Println("Error", err)
+		log.Infoln("Error", err)
 		return nil, err
 	}
 
 	for _, r := range resultInstances.Reservations {
 		for _, inst := range r.Instances {
 			if *inst.State.Name != "running" {
-				//fmt.Println("Skipping since state is: ", *inst.State.Name)
+				//log.Infoln("Skipping since state is: ", *inst.State.Name)
 				continue
 			}
 			var info InstanceInfo

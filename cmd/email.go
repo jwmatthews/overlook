@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/jwmatthews/overlook/pkg/overlook"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -36,7 +37,7 @@ const (
 func EmailReport() {
 
 	usageFileNames := overlook.GetBillingDataSortedFileNames()
-	fmt.Println(usageFileNames)
+	log.Infoln(usageFileNames)
 
 	reports := make([]overlook.ReportDaily, 0)
 	for _, f := range usageFileNames {
@@ -69,6 +70,9 @@ func SendEmail(reports []overlook.ReportDaily) {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1")},
 	)
+	if err != nil {
+		log.Fatalln("Unable to create new session", err)
+	}
 	svc := ses.New(sess)
 
 	// Assemble the email.
@@ -106,23 +110,23 @@ func SendEmail(reports []overlook.ReportDaily) {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case ses.ErrCodeMessageRejected:
-				fmt.Println(ses.ErrCodeMessageRejected, aerr.Error())
+				log.Infoln(ses.ErrCodeMessageRejected, aerr.Error())
 			case ses.ErrCodeMailFromDomainNotVerifiedException:
-				fmt.Println(ses.ErrCodeMailFromDomainNotVerifiedException, aerr.Error())
+				log.Infoln(ses.ErrCodeMailFromDomainNotVerifiedException, aerr.Error())
 			case ses.ErrCodeConfigurationSetDoesNotExistException:
-				fmt.Println(ses.ErrCodeConfigurationSetDoesNotExistException, aerr.Error())
+				log.Infoln(ses.ErrCodeConfigurationSetDoesNotExistException, aerr.Error())
 			default:
-				fmt.Println(aerr.Error())
+				log.Infoln(aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
 			// Message from an error.
-			fmt.Println(err.Error())
+			log.Infoln(err.Error())
 		}
 
 		return
 	}
 
-	fmt.Println("Email Sent to address: " + Recipient)
-	fmt.Println(result)
+	log.Infoln("Email Sent to address: " + Recipient)
+	log.Infoln(result)
 }

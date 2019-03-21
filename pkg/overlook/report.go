@@ -2,7 +2,7 @@ package overlook
 
 import (
 	"errors"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
 // NewReportDaily returns a new ReportDaily
@@ -19,7 +19,7 @@ func NewReportByRegion() ReportByRegion {
 }
 
 func PrintReport(r ReportDaily) {
-	fmt.Println(r.FormatByCost())
+	log.Infoln(r.FormatByCost())
 }
 
 // GetReport returns a summary of usage and costs for as given BillingDailyEntry
@@ -89,13 +89,13 @@ func GetReport(dailyEntry BillingDailyEntry) ReportDaily {
 // PrintCalculateReport returns a summary of usage and costs for as given BillingDailyEntry
 func PrintCalculateReport(dailyEntry BillingDailyEntry) {
 	for date, dayEntry := range dailyEntry {
-		fmt.Println(date)
+		log.Infoln(date)
 		for hour, hourEntry := range dayEntry {
-			fmt.Println("\t", hour)
+			log.Infoln("\t", hour)
 			for region, regionEntry := range hourEntry {
-				fmt.Println("\t\t", region)
+				log.Infoln("\t\t", region)
 				for instanceID, instanceEntry := range regionEntry {
-					fmt.Println("\t\t\t", instanceID, ":", "up ", instanceEntry.HoursUp)
+					log.Infoln("\t\t\t", instanceID, ":", "up ", instanceEntry.HoursUp)
 				}
 			}
 		}

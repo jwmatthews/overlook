@@ -3,8 +3,8 @@ package overlook
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -23,7 +23,7 @@ func GetBillingDataLocation() string {
 func GetBillingDataSortedFileNames() []string {
 	var billingDataPath = GetBillingDataLocation()
 	if _, err := os.Stat(billingDataPath); os.IsNotExist(err) {
-		fmt.Println("Billing directory of", billingDataPath, " doesn't exist")
+		log.Infoln("Billing directory of", billingDataPath, " doesn't exist")
 		panic(err)
 	}
 	// Get all files

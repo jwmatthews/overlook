@@ -7,6 +7,8 @@ var costPerHour map[string]float64
 func init() {
 	//https://aws.amazon.com/ec2/pricing/on-demand/
 	costPerHour = make(map[string]float64)
+	costPerHour["m5.large"] = 0.096
+	costPerHour["m5.xlarge"] = 0.192
 	costPerHour["m4.large"] = 0.10
 	costPerHour["t2.micro"] = 0.0116
 	costPerHour["m4.xlarge"] = 0.20
