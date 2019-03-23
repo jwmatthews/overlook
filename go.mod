@@ -100,12 +100,13 @@ require (
 	golang.org/x/crypto v0.0.0-20190320223903-b7391e95e576 // indirect
 	golang.org/x/exp v0.0.0-20190306152737-a1d7652674e8 // indirect
 	golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f // indirect
-	golang.org/x/net v0.0.0-20190320064053-1272bf9dcd53 // indirect
-	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421 // indirect
+	golang.org/x/net v0.0.0-20190320064053-1272bf9dcd53
+	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
 	golang.org/x/perf v0.0.0-20190306144031-151b6387e3f2 // indirect
 	golang.org/x/sys v0.0.0-20190321052220-f7bb7a8bee54 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	golang.org/x/tools v0.0.0-20190321211322-a94d7df2cbc8 // indirect
+	google.golang.org/api v0.1.0
 	google.golang.org/genproto v0.0.0-20190307195333-5fe7a883aa19 // indirect
 	honnef.co/go/tools v0.0.0-20190215041234-466a0476246c // indirect
 	mvdan.cc/unparam v0.0.0-20190310220240-1b9ccfa71afe // indirect

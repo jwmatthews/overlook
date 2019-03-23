@@ -46,6 +46,7 @@ func init() {
 	rootCmd.AddCommand(WatchCommand)
 	rootCmd.AddCommand(ReportCommand)
 	rootCmd.AddCommand(EmailCommand)
+	rootCmd.AddCommand(SpreadSheetCommand)
 
 	log.Infoln("Starting")
 }
