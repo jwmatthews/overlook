@@ -15,6 +15,10 @@ func init() {
 	costPerHour["c4.4xlarge"] = 0.796
 	costPerHour["t2.xlarge"] = 0.1856
 	costPerHour["t2.2xlarge"] = 0.3712
+	costPerHour["m4.4xlarge"] = 0.80
+	costPerHour["t2.medium"] = 0.0464
+	costPerHour["t2.small"] = 0.023
+	costPerHour["t2.large"] = 0.0928
 }
 
 // GetCostPerHour returns cost per hour based in instanceType
